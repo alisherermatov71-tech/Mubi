@@ -5,14 +5,10 @@ import telebot
 from telebot import types
 
 BOT_TOKEN = "8807365838:AAHd1J0-NilDnNOIqFTdBeoiolYA0_LoPlQ"
-API_KEY = "bf413be7448ba62f420b7dd853fed2bf"  # <-- сенің жаңа API KEY
+API_KEY = "bf413be7448ba62f420b7dd853fed2bf"
 API_URL = "https://topsmm.com/api/v2"
 
 bot = telebot.TeleBot(BOT_TOKEN)
-
-# Webhook-ты өшіреді
-bot.remove_webhook()
-time.sleep(1)
 
 def api_request(action, **params):
     params.update({"key": API_KEY, "action": action})
@@ -22,13 +18,21 @@ def api_request(action, **params):
     except:
         return {"error": "API қате"}
 
-
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("1. Қызмет тапсырыс беру", "2. Баланс")
+    markup.add("1. Қызмет тапсырыс беру")
+    markup.add("2. Баланс")
     markup.add("3. Менің тапсырыстарым")
     bot.send_message(message.chat.id, "Сәлеметсіз бе! 👋\nSMM қызметтеріне қош келдіңіз", reply_markup=markup)
 
+@bot.message_handler(func=lambda m: m.text == "2. Баланс")
+def balance(message):
+    data = api_request("balance")
+    if "balance" in data:
+        bot.send_message(message.chat.id, f"💰 Балансыңыз: {data['balance']} {data['currency']}")
+    else:
+        bot.send_message(message.chat.id, "Балансты ала алмадым. API KEY тексер")
 
-@bot.message_handler(func=lambda m
+print("Bot is running...")
+bot.polling(none_stop=True)
